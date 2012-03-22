@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv='Content-Type' content="text/html; charset=UTF-8">
+<script type="text/javascript" src="Engine3d.js"></script>
+<script type="text/javascript" src="Controller.js"></script>
+<script type="text/javascript" src="Character.js"></script>
+<script type="text/javascript" src="Map.js"></script>
+<script type="text/javascript" src="Menu.js"></script>
+<script type="text/javascript" src="game.js"></script>
+</head><body>
+<script type="text/javascript">
+
+function createMap(str){
+	var x = 4;
+	var y = 4;
+	var z = 32;
+	switch(parseInt(str)){
+		case 1: x = y =  8; break;
+		case 2: x = y = 16; break;
+		case 3: x = y = 32; break;
+		case 4: x = y = 48; break;
+		case 5: x = 64; y = 4; break;
+	}
+	
+	// 配列を作成
+	var newmap = new Array();
+	for(var k = 0; k < z; k++){
+		newmap[k] = new Array();
+		for(var j = 0; j < y; j++){
+			newmap[k][j] = new Array();
+			for(var i = 0; i < x; i++){
+				newmap[k][j][i] = 0;
+			}
+		}
+	}
+	
+	// 床を作成
+	var k = 8
+	for(var j = 0; j < y; j++){
+		newmap[k][j] = new Array();
+		for(var i = 0; i < x; i++){
+			newmap[k][j][i] = 2;
+		}
+	}
+	
+	// プレイヤー位置を決定
+	player.x = 3;
+	player.y = 3;
+	player.z = 10;
+	
+	map.init(e3d, newmap);
+}
+
+// マップをフィールドに書き出す
+function writeMap(){
+	var field = "var map = [";
+	for(var k = 0; k < map.map.length; k++){
+		field = field + "[\n";
+		for(var j = 0; j < map.map[0].length; j++){
+			field = field + "\t[";
+			for(var i = 0; i < map.map[0][0].length; i++){
+				field = field + " " + map.map[k][j][i] + ",";
+			}
+			field = field + "],\n";
+		}
+		field = field + "],";
+	}
+	field = field + "];";
+	document.getElementById('mapdata').value = field;
+}
+
+// マップをフィールドから読み出す
+function readMap(){
+	var i = 0;
+	var j = 0;
+	var k = 0;
+	
+	var field = document.getElementById('mapdata').value;
+	var index = field.indexOf("[", index) + 1;
+	var newmap = new Array();
+	while(1){
+		var bracket0 = field.indexOf("[", index);
+		var bracket1 = field.indexOf("]", index);
+		if(bracket0 == -1 || bracket1 == -1 || bracket0 >= bracket1){index = bracket1 + 1; break;}
+		index = bracket0 + 1;
+		newmap[k] = new Array();
+		j = 0;
+		while(1){
+			var bracket0 = field.indexOf("[", index);
+			var bracket1 = field.indexOf("]", index);
+			if(bracket0 == -1 || bracket1 == -1 || bracket0 >= bracket1){index = bracket1 + 1; break;}
+			index = bracket0 + 1;
+			newmap[k][j] = new Array();
+			i = 0;
+			while(1){
+				var bracket0 = field.indexOf(",", index);
+				var bracket1 = field.indexOf("]", index);
+				if(bracket0 == -1 || bracket1 == -1 || bracket0 >= bracket1){index = bracket1 + 1; break;}
+				newmap[k][j][i] = parseInt(field.substring(index, bracket0));
+				index = bracket0 + 1;
+				i++;
+			}
+			j++;
+		}
+		k++;
+	}
+	
+	map.init(e3d, newmap);
+}
+
+// プレイヤー位置を読み出す
+function readPlayer(){
+	document.getElementById('xcoordinate').value = player.x;
+	document.getElementById('ycoordinate').value = player.y;
+	document.getElementById('zcoordinate').value = player.z;
+}
+
+// プレイヤー位置を設定する
+function writePlayer(){
+	player.x = parseFloat(document.getElementById('xcoordinate').value);
+	player.y = parseFloat(document.getElementById('ycoordinate').value);
+	player.z = parseFloat(document.getElementById('zcoordinate').value);
+	if(isNaN(player.x)){player.x = 0;}
+	if(isNaN(player.y)){player.y = 0;}
+	if(isNaN(player.z)){player.z = 0;}
+}
+
+</script>
+
+<form id='mapinit'>
+	マップサイズ: 
+	<select name='select'>
+		<option value='1'>8x8</option>
+		<option value='2' selected='selected'>16x16</option>
+		<option value='3'>32x32</option>
+		<option value='4'>48x48</option>
+		<option value='5'>64x4</option>
+	</select>
+	<button type='button' onClick='createMap(this.form.select.value)'>新規作成</button>
+</form><br>
+
+<table><tr><td>
+<!-- キャンバス -->
+<canvas id='screen' width='320' height='320'></canvas><br>
+</td><td>
+プレイヤー位置:<br>
+x: <input type="text" id="xcoordinate" size="10"><br>
+y: <input type="text" id="ycoordinate" size="10"><br>
+z: <input type="text" id="zcoordinate" size="10"><br>
+<button type='button' onClick='readPlayer()'>→読出</button><br>
+<button type='button' onClick='writePlayer()'>←設定</button><br>
+</td><tr></table>
+
+<form id='mapfield'>
+	<button type='button' onClick='writeMap()'>↓書き出し</button>
+	<button type='button' onClick='readMap()'>↑読み込み(仮)</button>
+	<br>
+	<textarea cols=56 rows=10 id='mapdata'></textarea>
+</form>
+
+</body></html>
+
